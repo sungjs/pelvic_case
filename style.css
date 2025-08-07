@@ -103,3 +103,35 @@ input[type="file"] {
 .file-label:hover {
     background-color: #005a9e;
 }
+
+/* --- 아래 내용을 style.css 파일 맨 아래에 추가 --- */
+
+.controls {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap; /* 버튼이 많아지면 다음 줄로 넘어가도록 함 */
+    gap: 0.5rem; /* 버튼 사이의 간격 */
+    margin-bottom: 1rem;
+}
+
+.controls-secondary {
+    text-align: center;
+}
+
+#case-buttons-container button {
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+    border: 1px solid var(--accent-color);
+    background-color: transparent;
+    color: var(--accent-color);
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+/* 마우스를 올리거나 활성화된 버튼 스타일 */
+#case-buttons-container button:hover,
+#case-buttons-container button.active {
+    background-color: var(--accent-color);
+    color: white;
+}

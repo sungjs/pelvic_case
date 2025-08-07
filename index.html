@@ -3,16 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Side-by-Side Image Scroller</title>
+    <title>Image Comparison</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
     <div class="app-container">
         <header>
-            <h1>Side-by-Side Image Scroller</h1>
+            <h1>Image Comparison</h1>
             <div class="controls">
-                <label for="sync-scroll">
+                <div id="case-buttons-container"></div>
+            </div>
+            <div class="controls-secondary">
+                 <label for="sync-scroll">
                     <input type="checkbox" id="sync-scroll" checked>
                     스크롤 동기화
                 </label>
@@ -21,24 +24,14 @@
 
         <main class="comparison-container">
             <div class="panel">
-                <div class="panel-header">
-                    <h2>왼쪽 패널 (Auto)</h2>
-                    <input type="file" id="file-input-a" accept="image/*" multiple>
-                    <label for="file-input-a" class="file-label">이미지 불러오기</label>
-                </div>
                 <div class="image-content" id="content-a">
-                    <p class="placeholder">왼쪽 패널의 이미지를 불러오세요.</p>
+                    <p class="placeholder">상단에서 비교할 케이스를 선택하세요.</p>
                 </div>
             </div>
 
             <div class="panel">
-                <div class="panel-header">
-                    <h2>오른쪽 패널 (Manual)</h2>
-                    <input type="file" id="file-input-b" accept="image/*" multiple>
-                    <label for="file-input-b" class="file-label">이미지 불러오기</label>
-                </div>
                 <div class="image-content" id="content-b">
-                     <p class="placeholder">오른쪽 패널의 이미지를 불러오세요.</p>
+                     <p class="placeholder">상단에서 비교할 케이스를 선택하세요.</p>
                 </div>
             </div>
         </main>
