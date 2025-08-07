@@ -3,38 +3,36 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Image Comparison</title>
+    <title>Image Sequence Viewer</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
     <div class="app-container">
         <header>
-            <h1>Image Comparison</h1>
+            <h1>Image Sequence Viewer</h1>
             <div class="controls">
                 <div id="case-buttons-container"></div>
-            </div>
-            <div class="controls-secondary">
-                 <label for="sync-scroll">
-                    <input type="checkbox" id="sync-scroll" checked>
-                    스크롤 동기화
-                </label>
             </div>
         </header>
 
         <main class="comparison-container">
-            <div class="panel">
-                <div class="image-content" id="content-a">
-                    <p class="placeholder">상단에서 비교할 케이스를 선택하세요.</p>
-                </div>
+            <div class="panel" id="panel-a">
+                <img id="viewer-a" class="image-viewer" alt="Left image viewer">
             </div>
 
-            <div class="panel">
-                <div class="image-content" id="content-b">
-                     <p class="placeholder">상단에서 비교할 케이스를 선택하세요.</p>
-                </div>
+            <div class="panel" id="panel-b">
+                <img id="viewer-b" class="image-viewer" alt="Right image viewer">
             </div>
         </main>
+        
+        <footer>
+            <div class="slider-container">
+                <span id="current-slice">0</span>
+                <input type="range" id="slice-slider" min="0" max="100" value="0" step="1">
+                <span id="total-slices">0</span>
+            </div>
+        </footer>
     </div>
 
     <script src="script.js"></script>
