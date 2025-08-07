@@ -1,0 +1,105 @@
+/* 기본 스타일 및 글꼴 설정 */
+:root {
+    --border-color: #444;
+    --background-color: #1e1e1e;
+    --panel-background: #2a2a2a;
+    --text-color: #ccc;
+    --accent-color: #007acc;
+}
+
+body {
+    font-family: 'Malgun Gothic', sans-serif;
+    background-color: var(--background-color);
+    color: var(--text-color);
+    margin: 0;
+    padding: 1rem;
+    overflow: hidden; /* 전체 페이지 스크롤 방지 */
+}
+
+/* 앱 전체 컨테이너 */
+.app-container {
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 2rem);
+}
+
+header {
+    margin-bottom: 1rem;
+    text-align: center;
+}
+
+header h1 {
+    margin: 0 0 0.5rem 0;
+}
+
+.controls label {
+    cursor: pointer;
+    font-size: 1rem;
+}
+
+/* 메인 비교 영역 */
+.comparison-container {
+    display: flex;
+    gap: 1rem;
+    flex-grow: 1; /* 남은 공간을 모두 차지 */
+    min-height: 0; /* flex 자식 요소의 높이 문제 해결 */
+}
+
+/* 개별 패널 */
+.panel {
+    flex: 1; /* 1:1 비율로 공간 차지 */
+    background-color: var(--panel-background);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.panel-header {
+    padding: 0.75rem;
+    border-bottom: 1px solid var(--border-color);
+    text-align: center;
+}
+
+.panel-header h2 {
+    margin: 0 0 0.75rem 0;
+    font-size: 1.2rem;
+}
+
+/* 이미지가 표시될 스크롤 영역 */
+.image-content {
+    padding: 0.5rem;
+    overflow-y: scroll; /* 핵심: 세로 스크롤 활성화 */
+    flex-grow: 1;
+}
+
+.image-content img {
+    width: 100%;
+    display: block;
+    margin-bottom: 0.5rem; /* 이미지 간격 */
+}
+
+.placeholder {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    color: #666;
+}
+
+/* 파일 업로드 버튼 커스텀 */
+input[type="file"] {
+    display: none;
+}
+.file-label {
+    background-color: var(--accent-color);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+.file-label:hover {
+    background-color: #005a9e;
+}
