@@ -59,20 +59,45 @@ main.comparison-container {
 }
 
 .panel {
-    flex: 1;
     background-color: var(--panel-background);
     border: 1px solid var(--border-color);
     border-radius: 8px;
     display: flex;
+    flex-direction: column; /* 제목과 이미지를 세로로 정렬 */
     justify-content: center;
     align-items: center;
     overflow: hidden;
 }
+/* 이미지 뷰어 패널은 더 넓게 설정 */
+#panel-a, #panel-b { flex: 5; } 
 
 .image-viewer {
     max-width: 100%;
     max-height: 100%;
-    object-fit: contain; /* 이미지 비율 유지 */
+    object-fit: contain;
+}
+
+/* 범례 패널 스타일 */
+.legend-panel {
+    flex: 2; /* 뷰어 패널보다 좁게 설정 */
+    padding: 1rem;
+}
+.legend-panel h3 {
+    margin: 0 0 1rem 0;
+    text-align: center;
+    flex-shrink: 0;
+}
+.legend-image-container {
+    width: 100%;
+    flex-grow: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+#legend-image {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
 }
 
 footer {
