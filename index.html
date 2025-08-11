@@ -1,53 +1,58 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ko">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Image Sequence Viewer</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Pelvic Case Survey</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
+  <!-- 상단 바: 질문/케이스, 이전/다음 -->
+  <header id="topbar">
+    <div class="topbar-left">
+      <div id="question-indicator">Question 1 / 1</div>
+      <div id="question-title">Case 001</div>
+    </div>
+    <div class="topbar-center">
+        <button id="prev-question-btn" type="button" class="nav-btn" aria-label="Previous">◀ Prev</button>
 
-    <div class="app-container">
-        <header>
-            <h1>Image Sequence Viewer</h1>
-            <div class="controls">
-                <div id="case-buttons-container"></div>
-            </div>
-        </header>
+        <!-- 문항 점프 드롭다운 (블라인드: A/M 노출 없음) -->
+        <select id="question-jump" aria-label="Jump to question">
+            <!-- 스크립트에서 자동으로 채워집니다 -->
+        </select>
 
-        <main class="comparison-container">
-            <div class="panel legend-panel">
-                <h3>Structure Colors</h3>
-                <div class="legend-image-container">
-                    <img id="legend-image" alt="Structure color legend">
-                </div>
-            </div>
-
-            <div class="panel" id="panel-a">
-                <div class="panel-header">
-                    <h3>Contour A</h3>
-                </div>
-                <img id="viewer-a" class="image-viewer" alt="Contour A viewer">
-            </div>
-
-            <div class="panel" id="panel-b">
-                <div class="panel-header">
-                    <h3>Contour B</h3>
-                </div>
-                <img id="viewer-b" class="image-viewer" alt="Contour B viewer">
-            </div>
-        </main>
-        
-        <footer>
-            <div class="slider-container">
-                <span id="current-slice">0</span>
-                <input type="range" id="slice-slider" min="0" max="100" value="0" step="1">
-                <span id="total-slices">0</span>
-            </div>
-        </footer>
+        <button id="next-question-btn" type="button" class="nav-btn" aria-label="Next">Next ▶</button>
     </div>
 
-    <script src="script.js"></script>
+    <div class="topbar-right"><!-- 비워둠: 범례는 아래 좌측으로 이동 --></div>
+  </header>
+
+  <!-- 뷰어 행: [범례] [패널A] [패널B] [세로 슬라이더] -->
+  <main id="viewer-container">
+    <!-- 범례: 좌측 고정 -->
+    <aside id="legend-container" aria-label="Legend">
+      <img id="legend-image" alt="Structure Colors" />
+    </aside>
+
+    <div id="panel-a" class="viewer-panel">
+      <img id="viewer-a" alt="Viewer A" />
+      <div id="title-a" class="panel-title">Contour A</div>
+    </div>
+
+    <div id="panel-b" class="viewer-panel">
+      <img id="viewer-b" alt="Viewer B" />
+      <div id="title-b" class="panel-title">Contour B</div>
+    </div>
+
+    <!-- 세로 슬라이더: 우측 고정 -->
+    <aside id="slider-container" aria-label="Slice Slider">
+      <input type="range" id="slice-slider" min="0" value="0" orient="vertical" />
+      <div id="slice-counter">
+        <span id="current-slice">1</span> / <span id="total-slices">0</span>
+      </div>
+    </aside>
+  </main>
+
+  <script src="script.js"></script>
 </body>
 </html>

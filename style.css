@@ -1,119 +1,164 @@
-:root {
-    --border-color: #444;
-    --background-color: #1e1e1e;
-    --panel-background: #2a2a2a;
-    --text-color: #ccc;
-    --accent-color: #007acc;
+/* ===== 기본 ===== */
+* { box-sizing: border-box; }
+html, body {
+  height: 100%;
+  margin: 0;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+  background: #0b0e14;
+  color: #e6e6e6;
 }
 
-body {
-    font-family: 'Malgun Gothic', sans-serif;
-    background-color: var(--background-color);
-    color: var(--text-color);
-    margin: 0;
-    padding: 1rem;
-    overflow: hidden;
+/* ===== 상단 바 ===== */
+#topbar {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  background: rgba(255,255,255,0.02);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+.topbar-left { display: flex; flex-direction: column; gap: 4px; }
+#question-indicator { font-weight: 600; font-size: 14px; opacity: 0.9; }
+#question-title { font-size: 18px; font-weight: 700; }
+.topbar-center { display: flex; gap: 8px; justify-content: center; }
+.topbar-right { height: 24px; } /* 자리만 확보 */
+
+.nav-btn {
+  background: #1b2330;
+  color: #e6e6e6;
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 10px;
+  padding: 8px 12px;
+  cursor: pointer;
+}
+.nav-btn:hover { background: #243044; }
+
+/* ===== 메인 뷰어 행 ===== */
+#viewer-container {
+  display: flex;
+  align-items: stretch;
+  gap: 10px;
+  padding: 12px 14px;
+  height: calc(100vh - 96px); /* 상단바 제외 */
+  overflow: hidden;
 }
 
-.app-container {
-    display: flex;
-    flex-direction: column;
-    height: calc(100vh - 2rem);
-}
-
-header {
-    text-align: center;
-    flex-shrink: 0;
-}
-
-header h1 { margin: 0 0 1rem 0; }
-
-.controls {
-    display: flex;
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-    margin-bottom: 1rem;
-}
-
-#case-buttons-container button {
-    padding: 0.5rem 1rem;
-    border: 1px solid var(--accent-color);
-    background-color: transparent;
-    color: var(--accent-color);
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.2s, color 0.2s;
-}
-#case-buttons-container button:hover,
-#case-buttons-container button.active {
-    background-color: var(--accent-color);
-    color: white;
-}
-
-main.comparison-container {
-    display: flex;
-    gap: 1rem;
-    flex-grow: 1;
-    min-height: 0;
-}
-
-.panel {
-    background-color: var(--panel-background);
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    display: flex;
-    flex-direction: column; /* 제목과 이미지를 세로로 정렬 */
-    justify-content: center;
-    align-items: center;
-    overflow: hidden;
-}
-/* 이미지 뷰어 패널은 더 넓게 설정 */
-#panel-a, #panel-b { flex: 5; } 
-
-.image-viewer {
-    max-width: 100%;
-    max-height: 100%;
-    object-fit: contain;
-}
-
-/* 범례 패널 스타일 */
-.legend-panel {
-    flex: 2; /* 뷰어 패널보다 좁게 설정 */
-    padding: 1rem;
-}
-.legend-panel h3 {
-    margin: 0 0 1rem 0;
-    text-align: center;
-    flex-shrink: 0;
-}
-.legend-image-container {
-    width: 100%;
-    flex-grow: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+/* ===== 범례 (좌측 고정) ===== */
+#legend-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 12px;
+  margin-right: 4px;
+  min-width: 200px;      /* 레이아웃 안정성 */
+  max-width: 300px;
 }
 #legend-image {
-    max-width: 100%;
-    max-height: 100%;
-    object-fit: contain;
+  max-width: 100%;
+  max-height: 100%;
+  border-radius: 8px;
+  background: rgba(0,0,0,0.3);
+  border: 1px solid rgba(255,255,255,0.08);
+  object-fit: contain;
 }
 
-footer {
-    padding-top: 1rem;
-    flex-shrink: 0;
+/* ===== 패널 ===== */
+.viewer-panel {
+  position: relative;
+  flex: 5 1 0;              /* JS에서 5 또는 10으로 조정 */
+  min-width: 0;             /* 이미지 축소 시 오버플로 방지 */
+  background: #0f1522;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 12px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.viewer-panel img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  display: block;
+  user-select: none;
+  -webkit-user-drag: none;
 }
 
-.slider-container {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    width: 80%;
-    margin: 0 auto;
+/* 패널 타이틀 */
+.panel-title {
+  position: absolute;
+  left: 12px;
+  top: 10px;
+  padding: 4px 8px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  background: rgba(0,0,0,0.55);
+  border: 1px solid rgba(255,255,255,0.12);
 }
 
+/* ===== 세로 슬라이더 (우측 고정) ===== */
+#slider-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 10px;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  height: 100%;
+  min-width: 56px;   /* 조작 여유 */
+}
 #slice-slider {
-    width: 100%;
-    cursor: pointer;
+  writing-mode: bt-lr;                 /* 세로 (위→아래) */
+  -webkit-appearance: slider-vertical; /* Chrome/Safari */
+  appearance: slider-vertical;         /* 최신 브라우저 힌트 */
+  direction: ltr;
+  width: 10px;                         /* 두께 */
+  height: 100%;                        /* 컨테이너 가득 */
+  margin: 0;
+  transform: scaleY(-1);  /* 슬라이더 트랙/손잡이 시각적 반전 */
+}
+/* Firefox 대안(필요 시 활성화)
+#slice-slider { transform: rotate(-90deg); width: 100%; height: 10px; }
+*/
+
+#slice-counter {
+  font-size: 13px;
+  opacity: 0.9;
+  background: rgba(0,0,0,0.35);
+  padding: 4px 8px;
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.1);
+}
+
+/* ===== 공통 유틸 ===== */
+.hidden { display: none !important; }
+
+/* ===== 반응형 ===== */
+@media (max-width: 900px) {
+  #viewer-container { height: calc(100vh - 120px); }
+  #slice-slider { height: 85%; }
+}
+
+#question-jump {
+  background: #1b2330;
+  color: #e6e6e6;
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 10px;
+  padding: 8px 10px;
+  font-size: 14px;
+  min-width: 180px;
+  outline: none;
+}
+#question-jump:focus {
+  border-color: rgba(255,255,255,0.22);
 }

@@ -1,80 +1,270 @@
+// script.js (final: slider TOP->BOTTOM direct mapping + dropdown + blind titles)
+
 document.addEventListener('DOMContentLoaded', async () => {
-    // HTML 요소들
-    const viewerA = document.getElementById('viewer-a');
-    const viewerB = document.getElementById('viewer-b');
-    const panelA = document.getElementById('panel-a');
-    const panelB = document.getElementById('panel-b');
-    const slider = document.getElementById('slice-slider');
-    const currentSliceEl = document.getElementById('current-slice');
-    const totalSlicesEl = document.getElementById('total-slices');
-    const buttonsContainer = document.getElementById('case-buttons-container');
-    const legendImage = document.getElementById('legend-image'); // 범례 이미지 요소 추가
+  // ===== Element Handles =====
+  const viewerA = document.getElementById('viewer-a');
+  const viewerB = document.getElementById('viewer-b');
+  const panelA  = document.getElementById('panel-a');
+  const panelB  = document.getElementById('panel-b');
+  const titleA  = document.getElementById('title-a');
+  const titleB  = document.getElementById('title-b');
 
-    let currentCaseData = null;
-    let currentIndex = 0;
+  const slider  = document.getElementById('slice-slider');
+  const currentSliceEl = document.getElementById('current-slice');
+  const totalSlicesEl  = document.getElementById('total-slices');
 
-    const showSlice = (index) => {
-        if (!currentCaseData) return;
-        const newIndex = Math.max(0, Math.min(index, currentCaseData.auto_images.length - 1));
-        viewerA.src = currentCaseData.auto_images[newIndex];
-        viewerB.src = currentCaseData.manual_images[newIndex];
-        slider.value = newIndex;
-        currentSliceEl.textContent = newIndex + 1;
-        currentIndex = newIndex;
-    };
+  const legendImage    = document.getElementById('legend-image');
+  const questionIndicator = document.getElementById('question-indicator');
+  const questionTitleEl   = document.getElementById('question-title');
 
-    // 케이스를 선택했을 때 호출되는 함수
-    const loadCase = (caseData) => {
-        currentCaseData = caseData;
-        const totalImages = caseData.auto_images.length;
-        
-        slider.max = totalImages - 1;
-        slider.value = 0;
-        totalSlicesEl.textContent = totalImages;
+  const prevBtn = document.getElementById('prev-question-btn');
+  const nextBtn = document.getElementById('next-question-btn');
+  const jumpSelect = document.getElementById('question-jump'); // 있을 수도, 없을 수도
 
-        // --- 범례 이미지 업데이트 로직 추가 ---
-        const caseNumber = parseInt(caseData.prefix, 10);
-        legendImage.src = `structure_colors/case${caseNumber}.jpg`; // 범례 이미지 경로 설정
-        
-        showSlice(0);
-    };
+  // ===== App State =====
+  let allCasesData = null;     // images.json
+  let surveyQuestions = [];    // [{questionNumber, caseNumber, order: 'A'|'M'|'AM'|'MA'}]
+  let currentQuestionIndex = 0;
+  let currentSliceIndex    = 0;
 
-    slider.addEventListener('input', (e) => showSlice(parseInt(e.target.value, 10)));
+  // 현재 질문 이미지 배열
+  let imagesA = null; // 좌측
+  let imagesB = null; // 우측(없을 수 있음)
 
-    const handleWheel = (e) => {
-        e.preventDefault();
-        if (e.deltaY < 0) {
-            showSlice(currentIndex - 1);
-        } else {
-            showSlice(currentIndex + 1);
-        }
-    };
-    panelA.addEventListener('wheel', handleWheel);
-    panelB.addEventListener('wheel', handleWheel);
+  // ===== Utils =====
+  const clamp = (v, lo, hi) => Math.max(lo, Math.min(v, hi));
 
-    try {
-        const response = await fetch('images.json');
-        const data = await response.json();
-        
-        data.cases.forEach(caseData => {
-            const button = document.createElement('button');
-            const caseNumber = parseInt(caseData.prefix, 10);
-            button.textContent = `Case ${caseNumber}`;
-            
-            button.addEventListener('click', () => {
-                loadCase(caseData);
-                document.querySelectorAll('#case-buttons-container button').forEach(btn => btn.classList.remove('active'));
-                button.classList.add('active');
-            });
-            
-            buttonsContainer.appendChild(button);
-        });
+  function setPanelDefaults() {
+    panelA.classList.remove('hidden');
+    panelB.classList.remove('hidden');
+    panelA.style.flex = '5';
+    panelB.style.flex = '5';
 
-        if (data.cases.length > 0) {
-            loadCase(data.cases[0]);
-            buttonsContainer.querySelector('button').classList.add('active');
-        }
-    } catch (error) {
-        console.error("images.json 파일을 불러오거나 처리하는 데 실패했습니다:", error);
+    titleA.textContent = 'Contour A';
+    titleB.textContent = 'Contour B';
+
+    viewerA.removeAttribute('src');
+    viewerB.removeAttribute('src');
+    viewerB.style.display = ''; // 기본 표시
+  }
+
+  function setSingleLeftLayout() {
+    panelB.classList.add('hidden');
+    panelA.style.flex = '10';
+    titleA.textContent = 'Contour';
+  }
+
+  function setDualLayout() {
+    panelA.classList.remove('hidden');
+    panelB.classList.remove('hidden');
+    panelA.style.flex = '5';
+    panelB.style.flex = '5';
+    titleA.textContent = 'Contour A';
+    titleB.textContent = 'Contour B';
+  }
+
+  async function loadSurveyData() {
+    const raw = await fetch('survey_data.txt').then(r => r.text());
+    const text = raw.replace(/^\uFEFF/, ''); // BOM 제거
+    surveyQuestions = text
+      .split(/\r?\n/)
+      .map(l => l.trim())
+      .filter(l => l && !l.startsWith('#'))
+      .map((line, idx) => {
+        const [q, caseNo, order] = line.split('|').map(s => (s || '').trim());
+        return {
+          questionNumber: Number(q || (idx + 1)),
+          caseNumber: Number(caseNo),
+          order: (order || 'AM').toUpperCase()
+        };
+      });
+  }
+
+  async function loadImagesJson() {
+    allCasesData = await fetch('images.json').then(r => r.json());
+    if (!allCasesData || !Array.isArray(allCasesData.cases)) {
+      throw new Error('Invalid images.json structure');
     }
+  }
+
+  function getCaseDataByNumber(caseNumber) {
+    const prefix = String(caseNumber).padStart(3, '0');
+    return allCasesData.cases.find(c => c.prefix === prefix);
+  }
+
+  function populateJumpDropdown() {
+    if (!jumpSelect) return;
+    jumpSelect.innerHTML = '';
+    surveyQuestions.forEach((q, i) => {
+      const opt = document.createElement('option');
+      // 블라인드 유지: A/M/AM/MA는 표시하지 않음
+      opt.value = String(i);
+      opt.textContent = `Q${q.questionNumber} — Case ${String(q.caseNumber).padStart(3, '0')}`;
+      jumpSelect.appendChild(opt);
+    });
+  }
+
+  function loadQuestion(qIndex) {
+    if (!surveyQuestions.length || !allCasesData?.cases?.length) return;
+
+    currentQuestionIndex = clamp(qIndex, 0, surveyQuestions.length - 1);
+    const info = surveyQuestions[currentQuestionIndex];
+    const caseData = getCaseDataByNumber(info.caseNumber);
+
+    // 상단 정보
+    questionIndicator.textContent = `Question ${info.questionNumber} / ${surveyQuestions.length}`;
+    questionTitleEl.textContent   = `Case ${info.caseNumber}`;
+
+    // 범례 이미지(실패 시 자동 숨김)
+    if (legendImage) {
+      legendImage.style.display = '';
+      legendImage.onerror = () => { legendImage.style.display = 'none'; };
+      if (caseData?.prefix) {
+        legendImage.src = `structure_colors/case${caseData.prefix}.jpg`;
+      } else {
+        legendImage.style.display = 'none';
+      }
+    }
+
+    // 패널 초기화
+    setPanelDefaults();
+
+    if (!caseData) {
+      console.error(`Case ${info.caseNumber} not found in images.json`);
+      imagesA = null;
+      imagesB = null;
+      slider.max = 0;
+      slider.value = 0;
+      currentSliceIndex = 0;
+      currentSliceEl.textContent = '0';
+      totalSlicesEl.textContent  = '0';
+      if (jumpSelect) jumpSelect.value = String(currentQuestionIndex);
+      return;
+    }
+
+    const auto   = caseData.auto_images || [];
+    const manual = caseData.manual_images || [];
+
+    // 설문 순서 적용 (제목은 블라인드)
+    switch (info.order) {
+      case 'A':
+        imagesA = auto;
+        imagesB = null;
+        setSingleLeftLayout();
+        break;
+      case 'M':
+        imagesA = manual;
+        imagesB = null;
+        setSingleLeftLayout();
+        break;
+      case 'AM':
+        imagesA = auto;
+        imagesB = manual;
+        setDualLayout();
+        break;
+      case 'MA':
+        imagesA = manual;
+        imagesB = auto;
+        setDualLayout();
+        break;
+      default:
+        imagesA = auto;
+        imagesB = manual;
+        setDualLayout();
+    }
+
+    // 슬라이더 범위 설정 (두 패널이면 공통 최소 길이)
+    const lenA = imagesA?.length ?? 0;
+    const lenB = imagesB?.length ?? 0;
+    const total = imagesB ? Math.min(lenA, lenB) : lenA;
+
+    slider.max = Math.max(total - 1, 0);
+    // 초기 위치: TOP(위)=0 slice
+    slider.value = 0;              // ✅ direct mapping
+    currentSliceIndex = 0;
+
+    currentSliceEl.textContent = total ? '1' : '0';
+    totalSlicesEl.textContent  = String(total);
+
+    showSlice(0);
+
+    // 드롭다운 선택값 동기화
+    if (jumpSelect) jumpSelect.value = String(currentQuestionIndex);
+  }
+
+  function showSlice(index) {
+    if (!imagesA) return;
+
+    const lenA = imagesA.length;
+    const total = imagesB ? Math.min(lenA, imagesB.length) : lenA;
+    if (total <= 0) {
+      viewerA.removeAttribute('src');
+      viewerB.removeAttribute('src');
+      viewerB.style.display = imagesB ? '' : 'none';
+      return;
+    }
+
+    currentSliceIndex = clamp(index, 0, total - 1);
+
+    // ✅ direct mapping: TOP(0) → BOTTOM(max)
+    slider.value = currentSliceIndex;
+    currentSliceEl.textContent = String(currentSliceIndex + 1);
+
+    viewerA.src = imagesA[currentSliceIndex];
+    if (imagesB) {
+      viewerB.src = imagesB[currentSliceIndex];
+      viewerB.style.display = '';
+    } else {
+      viewerB.removeAttribute('src');
+      viewerB.style.display = 'none';
+    }
+  }
+
+  // ===== Events =====
+
+  // 슬라이더: 값 그대로 사용 (반전 매핑 제거)
+  slider.addEventListener('input', e => {
+    const idx = parseInt(e.target.value, 10) || 0;
+    showSlice(idx);
+  });
+
+  // 마우스 휠: 휠 ↓ = 다음(아래), 휠 ↑ = 이전(위)  → CT 방향(위→아래)과 일치
+  const onWheel = (e) => {
+    e.preventDefault();
+    const delta = e.deltaY < 0 ? -1 : 1;
+    showSlice(currentSliceIndex + delta);
+  };
+  panelA.addEventListener('wheel', onWheel, { passive: false });
+  panelB.addEventListener('wheel', onWheel, { passive: false });
+
+  // 이전/다음 문항
+  prevBtn.addEventListener('click', () => loadQuestion(currentQuestionIndex - 1));
+  nextBtn.addEventListener('click', () => loadQuestion(currentQuestionIndex + 1));
+
+  // 드롭다운 점프
+  if (jumpSelect) {
+    jumpSelect.addEventListener('change', (e) => {
+      const idx = parseInt(e.target.value, 10);
+      if (!Number.isNaN(idx)) loadQuestion(idx);
+    });
+  }
+
+  // ===== Initialize =====
+  async function initialize() {
+    try {
+      await loadSurveyData();   // survey_data.txt
+      await loadImagesJson();   // images.json
+      populateJumpDropdown();   // 드롭다운 항목 생성
+      if (surveyQuestions.length && allCasesData?.cases?.length) {
+        loadQuestion(0);
+      } else {
+        questionTitleEl.textContent = 'Error: Failed to load survey or image data.';
+      }
+    } catch (err) {
+      console.error('Initialization failed:', err);
+      questionTitleEl.textContent = 'Error: Application failed to initialize.';
+    }
+  }
+
+  initialize();
 });
