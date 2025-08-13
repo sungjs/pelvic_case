@@ -19,7 +19,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   const prevBtn = document.getElementById('prev-question-btn');
   const nextBtn = document.getElementById('next-question-btn');
-  const jumpSelect = document.getElementById('question-jump'); // 있을 수도, 없을 수도
+  const jumpSelect = document.getElementById('question-jump');
 
   // ===== App State =====
   let allCasesData = null;     // images.json
@@ -33,6 +33,23 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // ===== Utils =====
   const clamp = (v, lo, hi) => Math.max(lo, Math.min(v, hi));
+
+  // 이미지 미리 로드 함수
+  async function preloadImages(imageUrls) {
+    const promises = imageUrls.map(url => {
+      return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.src = url;
+        img.onload = () => resolve(img);
+        img.onerror = () => {
+          console.error(`Failed to preload image: ${url}`);
+          // 로딩 실패 시에도 진행을 위해 resolve
+          resolve(null);
+        };
+      });
+    });
+    return Promise.all(promises);
+  }
 
   function setPanelDefaults() {
     panelA.classList.remove('hidden');
@@ -104,7 +121,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
-  function loadQuestion(qIndex) {
+  async function loadQuestion(qIndex) {
     if (!surveyQuestions.length || !allCasesData?.cases?.length) return;
 
     currentQuestionIndex = clamp(qIndex, 0, surveyQuestions.length - 1);
@@ -179,13 +196,19 @@ document.addEventListener('DOMContentLoaded', async () => {
     const total = imagesB ? Math.min(lenA, lenB) : lenA;
 
     slider.max = Math.max(total - 1, 0);
-    // 초기 위치: TOP(위)=0 slice
-    slider.value = 0;              // ✅ direct mapping
+    slider.value = 0;
     currentSliceIndex = 0;
 
     currentSliceEl.textContent = total ? '1' : '0';
     totalSlicesEl.textContent  = String(total);
-
+    
+    // 이미지 미리 로드
+    let allImageUrls = [];
+    if (imagesA) allImageUrls = allImageUrls.concat(imagesA);
+    if (imagesB) allImageUrls = allImageUrls.concat(imagesB);
+    
+    await preloadImages(allImageUrls);
+    
     showSlice(0);
 
     // 드롭다운 선택값 동기화
@@ -206,7 +229,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     currentSliceIndex = clamp(index, 0, total - 1);
 
-    // ✅ direct mapping: TOP(0) → BOTTOM(max)
+    // direct mapping: TOP(0) → BOTTOM(max)
     slider.value = currentSliceIndex;
     currentSliceEl.textContent = String(currentSliceIndex + 1);
 
@@ -243,20 +266,20 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // 드롭다운 점프
   if (jumpSelect) {
-    jumpSelect.addEventListener('change', (e) => {
+    jumpSelect.addEventListener('change', async (e) => {
       const idx = parseInt(e.target.value, 10);
-      if (!Number.isNaN(idx)) loadQuestion(idx);
+      if (!Number.isNaN(idx)) await loadQuestion(idx);
     });
   }
 
   // ===== Initialize =====
   async function initialize() {
     try {
-      await loadSurveyData();   // survey_data.txt
-      await loadImagesJson();   // images.json
-      populateJumpDropdown();   // 드롭다운 항목 생성
+      await loadSurveyData();
+      await loadImagesJson();
+      populateJumpDropdown();
       if (surveyQuestions.length && allCasesData?.cases?.length) {
-        loadQuestion(0);
+        await loadQuestion(0);
       } else {
         questionTitleEl.textContent = 'Error: Failed to load survey or image data.';
       }
