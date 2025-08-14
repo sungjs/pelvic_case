@@ -133,7 +133,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const caseData = getCaseDataByNumber(info.caseNumber);
 
     questionIndicator.textContent = `Question ${info.questionNumber} / ${surveyQuestions.length}`;
-    questionTitleEl.textContent   = `Case ${info.caseNumber}`;
+    questionTitleEl.textContent   = `🗂️Case ${info.caseNumber}`;
 
     if (legendImage) {
       legendImage.style.display = '';

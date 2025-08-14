@@ -1,9 +1,12 @@
+/* Inter 폰트 불러오기 */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+
 /* ===== 기본 ===== */
 * { box-sizing: border-box; }
 html, body {
   height: 100%;
   margin: 0;
-  font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+  font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
   background: #0b0e14;
   color: #e6e6e6;
 }
@@ -21,24 +24,42 @@ html, body {
   top: 0;
   z-index: 10;
 }
-.topbar-left { display: flex; flex-direction: column; gap: 4px; }
 
-/* 상단 텍스트: 크기 업 */
-#question-indicator { font-weight: 600; font-size: 20px; opacity: 0.9; } /* 14 → 20 */
-#question-title { font-size: 28px; font-weight: 700; }                     /* 18 → 28 */
+/* 'Case'가 위로 오도록 순서 변경 */
+.topbar-left {
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 4px;
+}
+
+/* 'Question' 부분 스타일 */
+#question-indicator {
+  font-size: 22px;
+  font-weight: 600;
+  color: #f5f5f5;
+}
+
+/* 'Case' 부분 스타일 (글로우 효과 제거) */
+#question-title {
+  font-weight: 700;
+  font-size: 30px;
+  color: #fff;
+  text-transform: capitalize;
+  letter-spacing: 1.5px;
+}
+
 
 .topbar-center { display: flex; gap: 10px; justify-content: center; }
-.topbar-right { height: 24px; } /* 자리만 확보 */
+.topbar-right { height: 24px; }
 
 /* ===== 네비게이션 버튼 (Prev/Next) 크게 ===== */
-/* 기존 .nav-btn에 폰트/패딩/라운드 확대 */
 .nav-btn {
   background: #1b2330;
   color: #e6e6e6;
   border: 1px solid rgba(255,255,255,0.12);
-  border-radius: 12px;           /* 10 → 12 */
-  padding: 10px 16px;            /* 8x12 → 10x16 */
-  font-size: 18px;               /* (신규) 18px */
+  border-radius: 12px;
+  padding: 10px 16px;
+  font-size: 18px;
   line-height: 1.1;
   cursor: pointer;
 }
@@ -50,7 +71,7 @@ html, body {
   align-items: stretch;
   gap: 10px;
   padding: 12px 14px;
-  height: calc(100vh - 96px); /* 상단바 제외 */
+  height: calc(100vh - 96px);
   overflow: hidden;
 }
 
@@ -64,7 +85,7 @@ html, body {
   border: 1px solid rgba(255,255,255,0.08);
   border-radius: 12px;
   margin-right: 4px;
-  min-width: 200px;      /* 레이아웃 안정성 */
+  min-width: 200px;
   max-width: 300px;
 }
 #legend-image {
@@ -79,8 +100,8 @@ html, body {
 /* ===== 패널 ===== */
 .viewer-panel {
   position: relative;
-  flex: 5 1 0;              /* JS에서 5 또는 10으로 조정 */
-  min-width: 0;             /* 이미지 축소 시 오버플로 방지 */
+  flex: 5 1 0;
+  min-width: 0;
   background: #0f1522;
   border: 1px solid rgba(255,255,255,0.08);
   border-radius: 12px;
@@ -105,7 +126,7 @@ html, body {
   top: 10px;
   padding: 6px 10px;
   border-radius: 8px;
-  font-size: 20px;  /* 13 → 20 */
+  font-size: 20px;
   font-weight: 700;
   background: rgba(0,0,0,0.55);
   border: 1px solid rgba(255,255,255,0.12);
@@ -122,22 +143,22 @@ html, body {
   background: rgba(255,255,255,0.04);
   border: 1px solid rgba(255,255,255,0.08);
   height: 100%;
-  min-width: 56px;   /* 조작 여유 */
+  min-width: 56px;
 }
 #slice-slider {
-  writing-mode: bt-lr;                 /* 세로 (위→아래) */
-  -webkit-appearance: slider-vertical; /* Chrome/Safari */
-  appearance: slider-vertical;         /* 최신 브라우저 힌트 */
+  writing-mode: bt-lr;
+  -webkit-appearance: slider-vertical;
+  appearance: slider-vertical;
   direction: ltr;
-  width: 10px;                         /* 두께 */
-  height: 100%;                        /* 컨테이너 가득 */
+  width: 10px;
+  height: 100%;
   margin: 0;
-  transform: scaleY(-1);               /* 시각적 반전 */
+  transform: scaleY(-1);
 }
 
 /* 슬라이스 카운터 */
 #slice-counter {
-  font-size: 14px;            /* 13 → 14 (살짝 업) */
+  font-size: 14px;
   opacity: 0.9;
   background: rgba(0,0,0,0.35);
   padding: 4px 8px;
@@ -150,11 +171,11 @@ html, body {
   background: #1b2330;
   color: #e6e6e6;
   border: 1px solid rgba(255,255,255,0.12);
-  border-radius: 12px;       /* 10 → 12 */
-  padding: 10px 12px;        /* 8x10 → 10x12 */
-  font-size: 18px;           /* 14 → 18 */
-  min-width: 220px;          /* 180 → 220 (라벨 가독성) */
-  height: 42px;              /* 높이 고정으로 일관된 버튼 라인업 */
+  border-radius: 12px;
+  padding: 10px 12px;
+  font-size: 18px;
+  min-width: 220px;
+  height: 42px;
   outline: none;
 }
 #question-jump:focus {
@@ -169,9 +190,9 @@ html, body {
   #viewer-container { height: calc(100vh - 120px); }
   #slice-slider { height: 85%; }
 
-  /* 작은 화면에서는 컨트롤이 너무 커지지 않도록 약간 축소 */
   .nav-btn { font-size: 16px; padding: 9px 14px; }
   #question-jump { font-size: 16px; height: 40px; min-width: 200px; }
-  #question-indicator { font-size: 18px; }
-  #question-title { font-size: 24px; }
+  
+  #question-indicator { font-size: 20px; }
+  #question-title { font-size: 26px; }
 }
