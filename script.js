@@ -1,4 +1,4 @@
-// script.js (final: slider TOP->BOTTOM direct mapping + dropdown + blind titles)
+// script.js (Case 번호 → Question 번호 순 드롭다운, 'Case 1 — Q1' 형식)
 
 document.addEventListener('DOMContentLoaded', async () => {
   // ===== Element Handles =====
@@ -22,28 +22,24 @@ document.addEventListener('DOMContentLoaded', async () => {
   const jumpSelect = document.getElementById('question-jump');
 
   // ===== App State =====
-  let allCasesData = null;     // images.json
-  let surveyQuestions = [];    // [{questionNumber, caseNumber, order: 'A'|'M'|'AM'|'MA'}]
+  let allCasesData = null;     
+  let surveyQuestions = [];    
   let currentQuestionIndex = 0;
   let currentSliceIndex    = 0;
 
-  // 현재 질문 이미지 배열
-  let imagesA = null; // 좌측
-  let imagesB = null; // 우측(없을 수 있음)
+  let imagesA = null; 
+  let imagesB = null; 
 
-  // ===== Utils =====
   const clamp = (v, lo, hi) => Math.max(lo, Math.min(v, hi));
 
-  // 이미지 미리 로드 함수
   async function preloadImages(imageUrls) {
     const promises = imageUrls.map(url => {
-      return new Promise((resolve, reject) => {
+      return new Promise((resolve) => {
         const img = new Image();
         img.src = url;
         img.onload = () => resolve(img);
         img.onerror = () => {
           console.error(`Failed to preload image: ${url}`);
-          // 로딩 실패 시에도 진행을 위해 resolve
           resolve(null);
         };
       });
@@ -62,7 +58,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     viewerA.removeAttribute('src');
     viewerB.removeAttribute('src');
-    viewerB.style.display = ''; // 기본 표시
+    viewerB.style.display = '';
   }
 
   function setSingleLeftLayout() {
@@ -82,7 +78,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   async function loadSurveyData() {
     const raw = await fetch('survey_data.txt').then(r => r.text());
-    const text = raw.replace(/^\uFEFF/, ''); // BOM 제거
+    const text = raw.replace(/^\uFEFF/, '');
     surveyQuestions = text
       .split(/\r?\n/)
       .map(l => l.trim())
@@ -109,14 +105,22 @@ document.addEventListener('DOMContentLoaded', async () => {
     return allCasesData.cases.find(c => c.prefix === prefix);
   }
 
+  // ★ 수정된 부분: Case → Question 순서로 정렬, 'Case 1 — Q1' 형식
   function populateJumpDropdown() {
     if (!jumpSelect) return;
     jumpSelect.innerHTML = '';
-    surveyQuestions.forEach((q, i) => {
+
+    const sortedQuestions = [...surveyQuestions].sort((a, b) => {
+      if (a.caseNumber !== b.caseNumber) {
+        return a.caseNumber - b.caseNumber;
+      }
+      return a.questionNumber - b.questionNumber;
+    });
+
+    sortedQuestions.forEach(q => {
       const opt = document.createElement('option');
-      // 블라인드 유지: A/M/AM/MA는 표시하지 않음
-      opt.value = String(i);
-      opt.textContent = `Q${q.questionNumber} — Case ${String(q.caseNumber).padStart(3, '0')}`;
+      opt.value = String(surveyQuestions.indexOf(q));
+      opt.textContent = `Case ${q.caseNumber} — Q${q.questionNumber}`;
       jumpSelect.appendChild(opt);
     });
   }
@@ -128,11 +132,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     const info = surveyQuestions[currentQuestionIndex];
     const caseData = getCaseDataByNumber(info.caseNumber);
 
-    // 상단 정보
     questionIndicator.textContent = `Question ${info.questionNumber} / ${surveyQuestions.length}`;
     questionTitleEl.textContent   = `Case ${info.caseNumber}`;
 
-    // 범례 이미지(실패 시 자동 숨김)
     if (legendImage) {
       legendImage.style.display = '';
       legendImage.onerror = () => { legendImage.style.display = 'none'; };
@@ -143,7 +145,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
     }
 
-    // 패널 초기화
     setPanelDefaults();
 
     if (!caseData) {
@@ -162,7 +163,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     const auto   = caseData.auto_images || [];
     const manual = caseData.manual_images || [];
 
-    // 설문 순서 적용 (제목은 블라인드)
     switch (info.order) {
       case 'A':
         imagesA = auto;
@@ -190,7 +190,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         setDualLayout();
     }
 
-    // 슬라이더 범위 설정 (두 패널이면 공통 최소 길이)
     const lenA = imagesA?.length ?? 0;
     const lenB = imagesB?.length ?? 0;
     const total = imagesB ? Math.min(lenA, lenB) : lenA;
@@ -202,7 +201,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     currentSliceEl.textContent = total ? '1' : '0';
     totalSlicesEl.textContent  = String(total);
     
-    // 이미지 미리 로드
     let allImageUrls = [];
     if (imagesA) allImageUrls = allImageUrls.concat(imagesA);
     if (imagesB) allImageUrls = allImageUrls.concat(imagesB);
@@ -211,7 +209,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     showSlice(0);
 
-    // 드롭다운 선택값 동기화
     if (jumpSelect) jumpSelect.value = String(currentQuestionIndex);
   }
 
@@ -229,7 +226,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     currentSliceIndex = clamp(index, 0, total - 1);
 
-    // direct mapping: TOP(0) → BOTTOM(max)
     slider.value = currentSliceIndex;
     currentSliceEl.textContent = String(currentSliceIndex + 1);
 
@@ -243,15 +239,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
-  // ===== Events =====
-
-  // 슬라이더: 값 그대로 사용 (반전 매핑 제거)
   slider.addEventListener('input', e => {
     const idx = parseInt(e.target.value, 10) || 0;
     showSlice(idx);
   });
 
-  // 마우스 휠: 휠 ↓ = 다음(아래), 휠 ↑ = 이전(위)  → CT 방향(위→아래)과 일치
   const onWheel = (e) => {
     e.preventDefault();
     const delta = e.deltaY < 0 ? -1 : 1;
@@ -260,11 +252,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   panelA.addEventListener('wheel', onWheel, { passive: false });
   panelB.addEventListener('wheel', onWheel, { passive: false });
 
-  // 이전/다음 문항
   prevBtn.addEventListener('click', () => loadQuestion(currentQuestionIndex - 1));
   nextBtn.addEventListener('click', () => loadQuestion(currentQuestionIndex + 1));
 
-  // 드롭다운 점프
   if (jumpSelect) {
     jumpSelect.addEventListener('change', async (e) => {
       const idx = parseInt(e.target.value, 10);
@@ -272,7 +262,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
-  // ===== Initialize =====
   async function initialize() {
     try {
       await loadSurveyData();
